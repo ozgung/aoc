@@ -26,5 +26,4 @@ if __name__ == '__main__':
     solution = Solution(filename)
     solution.solve()
     print("Solution: ", solution.answers)
-    print("Solution: ", solution.debug)
     print("Solution: ", solution.answer)
