@@ -5,8 +5,8 @@ class Solution:
         self.parse_input(filename)
 
     def parse_input(self, filename):
-        pass
-
+        with open(filename, 'r') as file:
+            pass
     
     def solve(self):
         pass
