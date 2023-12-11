@@ -47,7 +47,6 @@ class Solution:
             return False
         
         next = self.grid[p[0]][p[1]]
-        print(self.cur, p, next)
         if next == '.':
             return False
         
@@ -96,7 +95,6 @@ class Solution:
         self.counter = Counter()
         for startdir in self.outdirs:
             self.outdir = startdir
-            print('trying', startdir)
             self.cur = self.start
             steps = 0
             self.bend = 0
@@ -117,67 +115,104 @@ class Solution:
         for row in self.grid:
             print(''.join(row))
 
+
+    def charat(self, p):
+        if p[0] < 0 or p[1] < 0 or p[0] >= len(self.grid) or p[1] >= len(self.grid[0]):
+            return None
+        else:
+            return self.grid[p[0]][p[1]]
+    def setcharat(self, p, c):
+        if p[0] < 0 or p[1] < 0 or p[0] >= len(self.grid) or p[1] >= len(self.grid[0]):
+            return
+        else:
+            self.grid[p[0]][p[1]] = c
+
     def flood_fill(self, start, mark='.', replace='I'):
-        def charat(p):
-            if p[0] < 0 or p[1] < 0 or p[0] >= len(self.grid) or p[1] >= len(self.grid[0]):
-                return None
-            else:
-                return self.grid[p[0]][p[1]]
-        def setcharat(p, c):
-            if p[0] < 0 or p[1] < 0 or p[0] >= len(self.grid) or p[1] >= len(self.grid[0]):
-                return
-            else:
-                self.grid[p[0]][p[1]] = c
-        
-        #if charat(start) == mark:
-        if start not in self.pathpos and charat(start) != replace:   
-            print("dot found")
-            setcharat(start, replace)
-            self.insides += 1
-            
+        if self.charat(start) == mark:
+            self.setcharat(start, replace)
+                
             for i in [-1, 0, 1]:
                 for j in [-1, 0, 1]:
                     if not (i == 0 and j == 0):
                         testpos = [start[0]+i, start[1]+j]
-                        self.flood_fill(testpos)
+                        if self.charat(testpos) == mark:
+                            self.flood_fill(testpos, mark, replace)
 
+    def clean_grid(self):
+        newgrid = []
+        for r in range(len(self.grid)):
+            newrow = ['.'] * len(self.grid[r])
+            newgrid.append(newrow)
+        
+        for r, c in self.pathpos:
+            newgrid[r][c] = self.grid[r][c]
+
+        self.grid = newgrid
 
     def find_enclosed(self):
-        def charat(p):
-            if p[0] < 0 or p[1] < 0 or p[0] >= len(self.grid) or p[1] >= len(self.grid[0]):
-                return None
-            else:
-                return self.grid[p[0]][p[1]]
 
         sign = 1 if self.bend > 0 else -1
 
         for i, o, pos in self.path:
-            char = charat(pos)
+            #char = charat(pos)
             
             if i == 'u':
                 testpos = [pos[0], pos[1]-sign]
+                outtestpos = [pos[0], pos[1]+sign]
             elif i == 'd':
                 testpos = [pos[0], pos[1]+sign]
+                outtestpos = [pos[0], pos[1]-sign]
             elif i == 'l':
                 testpos = [pos[0]+sign, pos[1]]
+                outtestpos = [pos[0]-sign, pos[1]]
             elif i == 'r':
                 testpos = [pos[0]-sign, pos[1]]
+                outtestpos = [pos[0]+sign, pos[1]]
             self.flood_fill(testpos)
-            
+            self.flood_fill(outtestpos, replace='O')
 
 
+            if o == 'd':
+                testpos = [pos[0], pos[1]-sign]
+                outtestpos = [pos[0], pos[1]+sign]
+            elif o == 'u':
+                testpos = [pos[0], pos[1]+sign]
+                outtestpos = [pos[0], pos[1]-sign]
+            elif o == 'r':
+                testpos = [pos[0]+sign, pos[1]]
+                outtestpos = [pos[0]-sign, pos[1]]
+            elif o == 'l':
+                testpos = [pos[0]-sign, pos[1]]
+                outtestpos = [pos[0]+sign, pos[1]]
+            self.flood_fill(testpos)
+            self.flood_fill(outtestpos, replace='O')
+
+    def find_outside(self):        
+        i, j = 0, 0
+        while self.grid[i][j] != '.':
+            j += 1
+            if j >= len(self.grid[i]):
+                j = 0
+                i += 1
+        self.flood_fill([i,j], mark = '.', replace='O')
         
+    def count(self):
+        self.counter = Counter()
+        for row in self.grid:
+            self.counter += Counter(row)
+
     def solve(self):
-        self.find_loop()
-        print(self.bend, self.path)
-        self.pathpos = [p for _, _, p in self.path]
-        print(self.pathpos)
-        self.print_grid()
-        self.find_enclosed()
-        self.print_grid()
-        self.answer = self.insides
-        
+        import sys
+        sys.setrecursionlimit(15000)
 
+        self.find_loop()
+        self.pathpos = [p for _, _, p in self.path]
+        self.clean_grid()
+        self.find_outside()
+        self.find_enclosed()
+        self.count()
+        self.print_grid()
+        self.answer = self.counter['I']
 
 if __name__ == '__main__':
     # test
