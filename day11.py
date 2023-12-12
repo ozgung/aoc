@@ -1,5 +1,7 @@
 from itertools import product
 
+EXPANSION_FACTOR = 1000000
+
 class Solution:
     def __init__(self, filename):
         self.answer = None
@@ -48,7 +50,7 @@ class Solution:
             rexp = sum(self.expansion_rows[min(pair[0][0], pair[1][0]): max(pair[0][0], pair[1][0])])
             cexp = sum(self.expansion_cols[min(pair[0][1], pair[1][1]): max(pair[0][1], pair[1][1])])
 
-            self.distances.append(dist(*pair)+ rexp + cexp )
+            self.distances.append(dist(*pair) + (rexp + cexp) * (EXPANSION_FACTOR - 1))
 
     def solve(self):
         self.print_space()
@@ -66,7 +68,12 @@ if __name__ == '__main__':
     solution.solve()
     print("Test: ", solution.answers)
     print("Test: ", solution.answer)
-    assert solution.answer == 374
+    if EXPANSION_FACTOR == 2:
+        assert solution.answer == 374
+    if EXPANSION_FACTOR == 10:
+        assert solution.answer == 1030
+    if EXPANSION_FACTOR == 100:
+        assert solution.answer == 8410
     
     # real solution
     filename = "input/day11.txt"
