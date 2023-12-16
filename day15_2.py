@@ -58,8 +58,6 @@ class Solution:
                 self.insert(boxidx, label, int(f))
         self.compute_focal()
 
-
-
 if __name__ == '__main__':
     # test
     filename = "input/day15test.txt"
