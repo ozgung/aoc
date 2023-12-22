@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from copy import deepcopy
+from itertools import product
 
 @dataclass
 class Part:
@@ -31,45 +32,25 @@ class Solution:
                 l = [p.split('=')[1] for p in params]
                 l = map(int, l)
                 self.parts.append(Part(*l))
-
-    
-
-    def soft_process(self, part, wf, rating='s'):
-        def check_cond(c):
-            prop = c[0]
-            op = c[1]
-            val = int(c[2:])
-            
-            if op == '<':
-                return getattr(part, prop) < val
-            elif op == '>':
-                return getattr(part, prop) > val
-            else:
-                assert False
-        
-        for i, condition in enumerate(wf):
-            if i < len(wf)-1:
-                a, b = condition.split(':')
-                if check_cond(a):
-                    return b
-            else:
-                # last cond
-                return condition
-
     
     def process(self, in_ranges, name):
-        def filter(c):
+        def filter(c, ranges):
             prop = c[0]
             op = c[1]
             val = int(c[2:])
-            
+            others = deepcopy(ranges)
             if op == '<':
-                in_ranges[prop][1] = val - 1
+                ranges[prop][1] = val - 1
+                others[prop][0] = val
             elif op == '>':
-                in_ranges[prop][0] = val - 1
+                ranges[prop][0] = val + 1
+                others[prop][1] = val
             else:
                 assert False
-
+            return others
+        
+        
+        print(name)
         if name == 'R':
             self.rejected.append(deepcopy(in_ranges))
             return
@@ -79,32 +60,33 @@ class Solution:
         
         wf = self.workflows[name]
 
+
+        ranges = deepcopy(in_ranges)
         for i, condition in enumerate(wf):
             if i < len(wf)-1:
                 c, target = condition.split(':')
+                others = filter(c, ranges)
                 
-                filter(c)
                 rating = c[0]
-                if in_ranges[rating][0] <= in_ranges[rating][1]:
-                    
-                    self.process(deepcopy(in_ranges), target)
-                else:
-                    continue
+                if ranges[rating][0] <= ranges[rating][1]:
+                    self.process(ranges, target)
+                ranges = others
             else:
                 target = condition
-                self.process(deepcopy(in_ranges), target) 
+                self.process(ranges, target) 
                 
 
     def solve(self):
         MIN, MAX = 1, 4000
 
-        acceptable = {'x': [1, 4000],'m': [1, 4000],'a': [1, 4000],'s' : [1, 4000]}
+        acceptable = {x: [MIN, MAX] for x in 'xmas'}
 
         self.accepted = []
         self.rejected = []
 
         self.process(acceptable, 'in')
 
+        print(self.accepted)
 
         for d in self.accepted:
             cnts = 1
@@ -112,17 +94,9 @@ class Solution:
                 n = d[r][1]-d[r][0] + 1
                 cnts *= max(n, 0)
             self.answers.append(cnts)
-        print('R', self.answers)
 
-        for d in self.rejected:
-            cnts = 1
-            for r in ['x','m','a','s']:
-                n = d[r][1]-d[r][0] + 1
-                cnts *= max(n, 0)
-            self.answers.append(cnts)
-
-        print(4000**4)
         self.answer =  sum(self.answers)            
+
 
 if __name__ == '__main__':
     # test
