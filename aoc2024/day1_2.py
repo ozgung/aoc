@@ -18,7 +18,26 @@ class Solution:
     def solve(self):
         self.lefts.sort()
         self.rights.sort()
-        self.answer = sum([abs(a-b) for a,b in zip(self.lefts, self.rights)])
+
+        right = 0
+        prev = None
+        for left in self.lefts:
+            if prev == left:
+                self.answers.append(self.answers[-1])
+                continue
+            cnt = 0
+            while right < len(self.rights):
+                if self.rights[right] == left:
+                    cnt += 1
+                    right += 1
+                elif self.rights[right] < left:
+                    right += 1
+                else:
+                    break
+            self.answers.append(cnt * left)
+            prev = left
+
+        self.answer = sum(self.answers)
 
 
 if __name__ == '__main__':
@@ -28,7 +47,7 @@ if __name__ == '__main__':
     solution.solve()
     print("Test: ", solution.answers)
     print("Test: ", solution.answer)
-    assert solution.answer == 11
+    assert solution.answer == 31
     
     # real solution
     filename = "./input/day1.txt"
