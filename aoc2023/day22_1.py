@@ -5,11 +5,19 @@ class Solution:
         self.parse_input(filename)
 
     def parse_input(self, filename):
+        self.bricks = []
         with open(filename, 'r') as file:
-            pass
+            for line in file:
+                ends = line.strip().split('~')
+                self.bricks.append([ list(map(int, e.split(','))) for e in ends])
     
+
+
     def solve(self):
-        pass
+        
+        for brick in self.bricks:
+            start, end = brick
+            
 
 
 if __name__ == '__main__':
